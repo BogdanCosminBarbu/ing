@@ -1,5 +1,6 @@
 package com.ing.intrw.service;
 
+import com.ing.intrw.exception.ProductNotFoundException;
 import com.ing.intrw.model.Product;
 import com.ing.intrw.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ public class ProductService {
             product.setUpdatedAt(LocalDateTime.now());
             return productRepository.save(product);
         }
-        return null;
+        throw new ProductNotFoundException("Product not found with ID: " + id);
     }
 
     public boolean deleteItemById(Long id) {
@@ -43,7 +44,7 @@ public class ProductService {
             productRepository.deleteById(id);
             return true;
         }
-        return false;
+        throw new ProductNotFoundException("Product not found with ID: " + id);
     }
 
     public List<Product> listAllItems() {
@@ -74,6 +75,6 @@ public class ProductService {
             product.setUpdatedAt(LocalDateTime.now());
             return productRepository.save(product);
         }
-        return null;
+        throw new ProductNotFoundException("Product not found with ID: " + id);
     }
 }

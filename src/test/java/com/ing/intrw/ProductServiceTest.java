@@ -1,5 +1,6 @@
 package com.ing.intrw;
 
+import com.ing.intrw.exception.ProductNotFoundException;
 import com.ing.intrw.model.Product;
 import com.ing.intrw.repository.ProductRepository;
 import com.ing.intrw.service.ProductService;
@@ -88,10 +89,7 @@ public class ProductServiceTest {
     void testDeleteItemByIdNotFound() {
         when(productRepository.findById(1L)).thenReturn(Optional.empty());
 
-        boolean isDeleted = productService.deleteItemById(1L);
-
-        assertFalse(isDeleted);
-        verify(productRepository, times(0)).deleteById(1L);
+        assertThrows(ProductNotFoundException.class, () -> productService.deleteItemById(1L));
     }
 
     @Test

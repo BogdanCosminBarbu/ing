@@ -1,5 +1,7 @@
 package com.ing.intrw.controller;
 
+import com.ing.intrw.exception.InvalidRequestException;
+import com.ing.intrw.exception.ProductNotFoundException;
 import com.ing.intrw.model.Product;
 import com.ing.intrw.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,20 +27,21 @@ public class ProductController {
 
     @GetMapping("/{id}")
     public Product findProduct(@PathVariable Long id) {
-        return productService.findProduct(id).orElseThrow(() -> new RuntimeException("Product not found"));
+        return productService.findProduct(id)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + id));
     }
 
     @PutMapping("/{id}/price")
     public ResponseEntity<Product> updatePrice(@PathVariable Long id, @RequestBody Map<String, Double> requestBody) {
         Double newPrice = requestBody.get("price");
         if (newPrice == null) {
-            return ResponseEntity.badRequest().build();
+            throw new InvalidRequestException("Price is required");
         }
         Product updatedProduct = productService.updatePrice(id, newPrice);
         if (updatedProduct != null) {
             return ResponseEntity.ok(updatedProduct);
         } else {
-            return ResponseEntity.notFound().build();
+            throw new ProductNotFoundException("Product not found with ID: " + id);
         }
     }
 
@@ -48,7 +51,7 @@ public class ProductController {
         if (isDeleted) {
             return ResponseEntity.noContent().build();
         } else {
-            return ResponseEntity.notFound().build();
+            throw new ProductNotFoundException("Product not found with ID: " + id);
         }
     }
 
@@ -87,7 +90,7 @@ public class ProductController {
         Integer newQuantity = requestBody.get("stock");
 
         if (newQuantity == null || newQuantity < 0) {
-            return ResponseEntity.badRequest().build();
+            throw new InvalidRequestException("Stock quantity must be non-negative");
         }
 
         Product updatedProduct = productService.updateStockQuantity(id, newQuantity);
@@ -95,7 +98,7 @@ public class ProductController {
         if (updatedProduct != null) {
             return ResponseEntity.ok(updatedProduct);
         } else {
-            return ResponseEntity.notFound().build();
+            throw new ProductNotFoundException("Product not found with ID: " + id);
         }
     }
 }
