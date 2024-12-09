@@ -4,6 +4,8 @@ import com.ing.intrw.exception.InvalidRequestException;
 import com.ing.intrw.exception.ProductNotFoundException;
 import com.ing.intrw.model.Product;
 import com.ing.intrw.service.ProductService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,29 +18,43 @@ import java.util.Map;
 @RequestMapping("/api/products")
 public class ProductController {
 
+    private static final Logger log = LoggerFactory.getLogger(ProductController.class);
+
     @Autowired
     private ProductService productService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Product addProduct(@RequestBody Product product) {
-        return productService.addProduct(product);
+        log.info("Adding product: {}", product);
+        Product addedProduct = productService.addProduct(product);
+        log.info("Product added: {}", addedProduct);
+        return addedProduct;
     }
 
     @GetMapping("/{id}")
     public Product findProduct(@PathVariable Long id) {
-        return productService.findProduct(id)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + id));
+        log.info("Fetching product with ID: {}", id);
+        Product product = productService.findProduct(id)
+                .orElseThrow(() -> {
+                    log.error("Product not found with ID: {}", id);
+                    return new ProductNotFoundException("Product not found with ID: " + id);
+                });
+        log.info("Product found: {}", product);
+        return product;
     }
 
     @PutMapping("/{id}/price")
     public ResponseEntity<Product> updatePrice(@PathVariable Long id, @RequestBody Map<String, Double> requestBody) {
+        log.info("Updating price for product with ID: {}. New price: {}", id, requestBody.get("price"));
         Double newPrice = requestBody.get("price");
         if (newPrice == null) {
+            log.error("Price is required for product with ID: {}", id);
             throw new InvalidRequestException("Price is required");
         }
         Product updatedProduct = productService.updatePrice(id, newPrice);
         if (updatedProduct != null) {
+            log.info("Updated product price: {}", updatedProduct);
             return ResponseEntity.ok(updatedProduct);
         } else {
             throw new ProductNotFoundException("Product not found with ID: " + id);
@@ -47,10 +63,13 @@ public class ProductController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteItem(@PathVariable Long id) {
+        log.info("Deleting product with ID: {}", id);
         boolean isDeleted = productService.deleteItemById(id);
         if (isDeleted) {
+            log.info("Product with ID: {} deleted successfully", id);
             return ResponseEntity.noContent().build();
         } else {
+            log.error("Product with ID: {} not found for deletion", id);
             throw new ProductNotFoundException("Product not found with ID: " + id);
         }
     }

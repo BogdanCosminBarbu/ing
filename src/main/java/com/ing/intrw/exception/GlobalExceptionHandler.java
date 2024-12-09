@@ -34,4 +34,10 @@ public class GlobalExceptionHandler {
         log.error("Unexpected error: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
     }
+
+    @ExceptionHandler(NoProductsFoundException.class)
+    public ResponseEntity<String> handleNoProductsFoundException(NoProductsFoundException ex) {
+        log.warn("NoProductsFoundException: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
 }
