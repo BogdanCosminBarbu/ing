@@ -60,7 +60,7 @@ public class ProductService {
             return true;
         } else {
             log.error("Product not found with ID: {}", id);
-            return false;
+            throw new ProductNotFoundException("Product not found with ID: " + id);
         }
     }
 
